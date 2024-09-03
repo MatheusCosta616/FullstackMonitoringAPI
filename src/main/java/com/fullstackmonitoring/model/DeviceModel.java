@@ -11,6 +11,16 @@ import lombok.Setter;
 import java.util.UUID;
 import org.hibernate.annotations.GenericGenerator;
 
+/**
+ * Representa um dispositivo no sistema de monitoramento fullstack.
+ * Esta classe é uma entidade JPA que mapeia para a tabela "TD_DEVICE" no banco de dados.
+ *
+ * <p>Cada dispositivo é identificado por um UUID único e contém informações como
+ * nome, status, último ping, localização e logs.</p>
+ *
+ * <p>A classe utiliza as anotações Lombok para gerar automaticamente getters, setters,
+ * e construtores, reduzindo a verbosidade do código.</p>
+ */
 @Table(name = "TD_DEVICE")
 @Getter
 @Setter
@@ -27,5 +37,4 @@ public class DeviceModel {
     private String lastPing;
     private String location;
     private String logs;
-
 }
