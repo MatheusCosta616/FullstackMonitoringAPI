@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -19,6 +20,7 @@ import java.util.UUID;
  * Fornece endpoints para criar, recuperar, atualizar e gerenciar dispositivos no sistema.
  */
 @RestController
+@CrossOrigin(origins = "http://localhost:5173")
 public class DeviceController {
 
     @Autowired
@@ -44,7 +46,10 @@ public class DeviceController {
      */
     @GetMapping("/devices")
     public ResponseEntity<List<DeviceModel>> getAllDevices() {
-        return ResponseEntity.status(HttpStatus.OK).body(deviceRepository.findAll());
+        System.out.println("Método getAllDevices foi chamado");
+        List<DeviceModel> devices = deviceRepository.findAll();
+        System.out.println("Dispositivos encontrados: " + devices.size());
+        return ResponseEntity.status(HttpStatus.OK).body(devices);
     }
 
     /**
@@ -95,5 +100,59 @@ public class DeviceController {
         }
         deviceRepository.delete(device.get());
         return ResponseEntity.status(HttpStatus.OK).body("Dispositivo deletado com sucesso");
+    }
+
+    /**
+     * Recupera o status de um dispositivo específico pelo seu ID.
+     *
+     * @param deviceId UUID do dispositivo a ser recuperado.
+     * @return ResponseEntity com o status do dispositivo encontrado ou uma mensagem de erro se não for encontrado.
+     */
+    @GetMapping("/devices/{deviceId}/status")
+    public ResponseEntity<Object> getDeviceStatus(@PathVariable(value = "deviceId") UUID deviceId) {
+        Optional<DeviceModel> device = deviceRepository.findById(deviceId);
+        if (device.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Dispositivo não encontrado");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(device.get().getStatus());
+    }
+
+    /**
+     * Adiciona um novo log para um dispositivo específico.
+     *
+     * @param deviceId UUID do dispositivo.
+     * @param logMessage Mensagem de log a ser adicionada.
+     * @return ResponseEntity com o dispositivo atualizado e status HTTP 201 (CREATED).
+     */
+    @PostMapping("/devices/{deviceId}/log")
+    public ResponseEntity<Object> addDeviceLog(@PathVariable(value = "deviceId") UUID deviceId, @RequestBody String logMessage) {
+        Optional<DeviceModel> deviceOptional = deviceRepository.findById(deviceId);
+        if (deviceOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Dispositivo não encontrado");
+        }
+        
+        DeviceModel device = deviceOptional.get();
+        device.setLogs(logMessage);
+        device.setLastPing(LocalDateTime.now().toString());
+        
+        DeviceModel updatedDevice = deviceRepository.save(device);
+        return ResponseEntity.status(HttpStatus.CREATED).body(updatedDevice);
+    }
+
+    /**
+     * Recupera o log de um dispositivo específico.
+     *
+     * @param deviceId UUID do dispositivo.
+     * @return ResponseEntity com o log do dispositivo e status HTTP 200 (OK).
+     */
+    @GetMapping("/devices/{deviceId}/log")
+    public ResponseEntity<Object> getDeviceLog(@PathVariable(value = "deviceId") UUID deviceId) {
+        Optional<DeviceModel> deviceOptional = deviceRepository.findById(deviceId);
+        if (deviceOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Dispositivo não encontrado");
+        }
+        
+        String log = deviceOptional.get().getLogs();
+        return ResponseEntity.status(HttpStatus.OK).body(log);
     }
 }

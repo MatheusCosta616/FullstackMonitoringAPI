@@ -13,9 +13,9 @@ import jakarta.validation.constraints.NotBlank;
  * @param logs Logs associados ao dispositivo.
  */
 public record DeviceDTO(
-        @NotBlank String name,
-        @NotBlank String status,
-        @NotBlank String lastPing,
-        String location,
-        @NotBlank String logs
+    @NotBlank String name,
+    @NotBlank String status,
+    String lastPing,
+    String location,
+    String logs
 ) {}
